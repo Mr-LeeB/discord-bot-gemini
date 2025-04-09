@@ -1,3 +1,5 @@
+from flask import Flask
+import threading
 import discord
 import os
 import google.generativeai as genai
@@ -58,19 +60,30 @@ async def gemini_chat(interaction: discord.Interaction, prompt: str):
 bot.run(DISCORD_TOKEN)
 
 
-import threading
-from flask import Flask
-import os
-
 app = Flask(__name__)
+
 
 @app.route('/')
 def home():
     return "Gemini Bot is running"
 
+
 def run_web():
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
 
+
 # Chạy server flask giả ở luồng khác
-threading.Thread(target=run_web).start()
+# Cuối file bot.py
+if __name__ == "__main__":
+    # Chạy Flask server giả ở luồng riêng
+    threading.Thread(target=run_web).start()
+
+    # Chạy bot Discord
+    bot.run(DISCORD_TOKEN)
+
+
+@app.route("/")
+def home():
+    print("✅ Flask server got a ping!")
+    return "Gemini Bot is alive!"
