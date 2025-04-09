@@ -31,7 +31,19 @@ async def on_ready():
 
 @bot.tree.command(name="gemini", description="Đặt câu hỏi cho Gemini bằng tiếng Việt")
 async def gemini_chat(interaction: discord.Interaction, prompt: str):
+    # Tên các channel được phép
+    allowed_channels = ["gemini-chat", "ask-gemini"]
+
+    # Kiểm tra channel
+    if interaction.channel.name not in allowed_channels:
+        await interaction.response.send_message(
+            f"❌ Lệnh này chỉ hoạt động trong các kênh: {', '.join(allowed_channels)}",
+            ephemeral=True  # chỉ người dùng thấy
+        )
+        return
+
     await interaction.response.defer()  # gửi trạng thái đang xử lý
+
     try:
         response = model.generate_content(prompt)
         reply = response.text
