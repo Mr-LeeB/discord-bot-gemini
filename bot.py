@@ -56,3 +56,21 @@ async def gemini_chat(interaction: discord.Interaction, prompt: str):
         await interaction.followup.send(f"❌ Lỗi khi gọi Gemini: {e}")
 
 bot.run(DISCORD_TOKEN)
+
+
+import threading
+from flask import Flask
+import os
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Gemini Bot is running"
+
+def run_web():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
+# Chạy server flask giả ở luồng khác
+threading.Thread(target=run_web).start()
