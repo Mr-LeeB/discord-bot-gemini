@@ -41,23 +41,29 @@ async def on_ready():
     print(f"🤖 Bot đã sẵn sàng dưới tên: {bot.user}")
 
 
-@bot.command(name="gemini")
-async def gemini_chat(ctx, *, prompt: str):
-    if isinstance(ctx.channel, discord.DMChannel):
-        await ctx.reply("❌ Lệnh này chỉ hoạt động trong server Discord.")
+@bot.tree.command(name="gemini", description="Đặt câu hỏi cho Gemini")
+async def gemini_chat(interaction: discord.Interaction, prompt: str):
+    # Tên các channel được phép
+    allowed_channels = ["gemini-chat", "ask-gemini"]
+
+    # Kiểm tra channel
+    if interaction.channel.name not in allowed_channels:
+        await interaction.response.send_message(
+            f"❌ Lệnh này chỉ hoạt động trong các kênh: {', '.join(allowed_channels)}",
+            ephemeral=True  # chỉ người dùng thấy
+        )
         return
 
-    await ctx.trigger_typing()
+    await interaction.response.defer()
+
     try:
         response = model.generate_content(prompt)
         reply = response.text
-
         if len(reply) > 1900:
             reply = reply[:1900] + "..."
-
-        await ctx.reply(reply)
+        await interaction.followup.send(reply)
     except Exception as e:
-        await ctx.reply("❌ Lỗi khi gọi Gemini: " + str(e))
+        await interaction.followup.send(f"❌ Lỗi: {e}")
 
 # Khởi chạy Flask + bot song song
 if __name__ == "__main__":
