@@ -74,7 +74,6 @@ def run_web():
 
 
 # Chạy server flask giả ở luồng khác
-# Cuối file bot.py
 if __name__ == "__main__":
     # Chạy Flask server giả ở luồng riêng
     threading.Thread(target=run_web).start()
