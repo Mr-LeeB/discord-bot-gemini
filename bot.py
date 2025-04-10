@@ -59,9 +59,11 @@ async def gemini_chat(interaction: discord.Interaction, prompt: str):
     try:
         response = model.generate_content(prompt)
         reply = response.text
-        if len(reply) > 1900:
-            reply = reply[:1900] + "..."
-        await interaction.followup.send(reply)
+        MAX_LENGTH = 1900
+        chunks = [reply[i:i+MAX_LENGTH]
+                  for i in range(0, len(reply), MAX_LENGTH)]
+        for chunk in chunks:
+            await interaction.followup.send(chunk)
     except Exception as e:
         await interaction.followup.send(f"❌ Lỗi: {e}")
 
