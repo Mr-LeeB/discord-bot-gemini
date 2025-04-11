@@ -41,31 +41,56 @@ async def on_ready():
     print(f"🤖 Bot đã sẵn sàng dưới tên: {bot.user}")
 
 
+# Dict lưu chat session theo user
+user_sessions = {}
+
+
 @bot.tree.command(name="gemini", description="Đặt câu hỏi cho Gemini")
 async def gemini_chat(interaction: discord.Interaction, prompt: str):
-    # Tên các channel được phép
     allowed_channels = ["gemini-chat", "ask-gemini"]
 
-    # Kiểm tra channel
     if interaction.channel.name not in allowed_channels:
         await interaction.response.send_message(
             f"❌ Lệnh này chỉ hoạt động trong các kênh: {', '.join(allowed_channels)}",
-            ephemeral=True  # chỉ người dùng thấy
+            ephemeral=True
         )
         return
 
     await interaction.response.defer()
 
     try:
-        response = model.generate_content(prompt)
+        user_id = interaction.user.id
+
+        # Nếu user chưa có session, tạo mới
+        if user_id not in user_sessions:
+            user_sessions[user_id] = model.start_chat(history=[])
+
+        chat = user_sessions[user_id]
+
+        # Gửi câu hỏi và nhận phản hồi từ Gemini
+        response = chat.send_message(prompt)
         reply = response.text
+
         MAX_LENGTH = 1900
         chunks = [reply[i:i+MAX_LENGTH]
                   for i in range(0, len(reply), MAX_LENGTH)]
         for chunk in chunks:
             await interaction.followup.send(chunk)
+
     except Exception as e:
         await interaction.followup.send(f"❌ Lỗi: {e}")
+
+
+@bot.tree.command(name="reset_gemini", description="Xoá ngữ cảnh trò chuyện với Gemini của bạn")
+async def reset_gemini(interaction: discord.Interaction):
+    user_id = interaction.user.id
+
+    if user_id in user_sessions:
+        del user_sessions[user_id]
+        await interaction.response.send_message("✅ Đã reset hội thoại với Gemini.")
+    else:
+        await interaction.response.send_message("ℹ️ Bạn chưa có hội thoại nào để reset.")
+
 
 # Khởi chạy Flask + bot song song
 if __name__ == "__main__":
