@@ -1,5 +1,6 @@
 discord.py>=2.3
 python-dotenv
+certifi>=2024.2.2
 google-generativeai
 flask
 google-genai
