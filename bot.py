@@ -49,7 +49,7 @@ class ChatSessionManager:
         self._cleanup(now)
         
         if user_id not in self.sessions:
-            chat = gemini_client.chats.create(model="gemini-1.5-flash")
+            chat = gemini_client.chats.create(model="gemini-2.5-flash")
             self.sessions[user_id] = {"chat": chat, "last_active": now}
         else:
             self.sessions[user_id]["last_active"] = now
